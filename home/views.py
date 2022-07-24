@@ -1,42 +1,50 @@
-from multiprocessing import context
-from unicodedata import name
-from django.shortcuts import render, HttpResponse
-from home.models import Contact
-from datetime import datetime
+import re
+from django.shortcuts import render, redirect
+# from django.contrib.auth.models import User
+from django.contrib.auth.models import User
+from django.contrib.auth import logout, authenticate, login
+# from django.contrib.auth import 
 
-from django.contrib import messages
+
+# password for amisha is aditya@01
 
 # Create your views here.
 
 def index(request):
+    if request.user.is_anonymous:
+        print(request.user)
 
-    context={
-        'variable1': "aditya is a good boy",
-        'variable2': "amisha and drishti are good girls",
-    }
-    return render(request, 'index.html', context)
-    # return HttpResponse("This is the HomePage")   
-def about(request):
-    # return HttpResponse("This is the About Page"),
-    return render(request, 'about.html')
+        return redirect("/login")
 
-def services(request):
-    # return HttpResponse("This is the Services Page"),
-    return render(request, 'services.html')
+    return render(request, 'index.html')
 
-def contact(request):
-    # return HttpResponse("This is the Contacts Page"),
-    if request.method == "POST":
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')
-        desc = request.POST.get('desc')
+def loginUser(request):
+    print("rahul")
 
-        print(name, email)
+    if request.method=="POST":
+        # check if user has entered correct credentials
+        print('working')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        print(username, password)
 
+        user = authenticate(username= username, password= password) 
 
-        contact = Contact(name= name, email=email, phone=phone, desc=desc, date=datetime.today())
-        contact.save()
-        messages.success(request, 'Your message has been sent.')
+        if user is not None:
+            # Backend authenticated the credentials
+            # I am unable to fetch the password which user is typing
+            # an due to this every user is getting considered as anonymous user
+            # what should I do now coZ I am feeling helpless
+            login(request, user, backend=None) 
+            return redirect("/") 
 
-    return render(request, 'contact.html')
+        else:
+            # No backend authenticated the credentials
+            return render(request, 'login.html')
+
+    return render(request, 'login.html')
+
+def logoutUser(request):
+    logout(request)
+    return redirect("/login")
